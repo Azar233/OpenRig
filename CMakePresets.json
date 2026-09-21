@@ -1,0 +1,69 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "dev",
+      "displayName": "OpenRig developer build",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build/dev",
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "OPENRIG_BUILD_TESTS": "ON",
+        "OPENRIG_BUILD_SANDBOX": "ON",
+        "OPENRIG_WARNINGS_AS_ERRORS": "OFF"
+      }
+    },
+    {
+      "name": "ci",
+      "inherits": "dev",
+      "displayName": "OpenRig CI build",
+      "binaryDir": "${sourceDir}/build/ci",
+      "cacheVariables": {
+        "OPENRIG_WARNINGS_AS_ERRORS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "dev-debug",
+      "configurePreset": "dev",
+      "configuration": "Debug"
+    },
+    {
+      "name": "dev-release",
+      "configurePreset": "dev",
+      "configuration": "Release"
+    },
+    {
+      "name": "ci-release",
+      "configurePreset": "ci",
+      "configuration": "Release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "dev-debug",
+      "configurePreset": "dev",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "ci-release",
+      "configurePreset": "ci",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

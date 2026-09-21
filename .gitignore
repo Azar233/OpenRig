@@ -1,0 +1,29 @@
+# Build output
+/build/
+/out/
+/cmake-build-*/
+
+# IDE and editor state
+/.vs/
+/.vscode/
+/.idea/
+*.user
+*.suo
+
+# Compiler output
+*.obj
+*.o
+*.pdb
+*.ilk
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Generated audio/test artifacts
+/artifacts/
+/Testing/
+
+# OS metadata
+.DS_Store
+Thumbs.db
