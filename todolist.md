@@ -39,7 +39,7 @@ W1、W2 已完成，下一步进入 W3 的 T002/T043，再与 W4 汇合。CI 不
 | T003 | P0 | TODO | 真实设备运行默认 Graph | 可选 ASIO 设备及已验证的输入/输出通道；mono 输入经过 Gain → SoftClip → Gain 到 stereo 输出；参数实时修改；启停和失败安全 | T010, T011, T012, T043 | W4；记录声卡、驱动、Sample Rate、请求/实际 Block、通道、时长及 Dropout；任意通道支持须实测 |
 | T004 | P0 | DONE | 独立的 `openrig_core` Library | 无须 iPlug2/UI 即可构建与测试 | T001 | `openrig_core.lib` 在 Debug/Release 均构建通过，且不依赖 iPlug2/UI |
 | T005 | P0 | DONE | `AudioNode` 接口与 Gain Node | Gain 支持可变 Block；Bypass/Reset/Descriptor 测试通过 | T004 | `openrig_node_tests` 覆盖 Descriptor、Reset、Bypass 与 10 ms 平滑；Graph 执行测试覆盖可变 Block |
-| T006 | P0 | IN REVIEW | Buffer/Process 接口 | Planar View 不拥有内存；Process 无分配；边界有文档 | T004 | Planar View 和非法 Buffer/Block 安全边界已落地；自动分配检测仍由 T037a 补齐 |
+| T006 | P0 | DONE | Buffer/Process 接口 | Planar View 不拥有内存；Process 无分配；边界有文档 | T004 | Planar View 与非法 Buffer/Block 安全边界已落地；T037a 的测试 Hook 验证 100,000 Block 实时处理零堆分配 |
 | T007 | P0 | DONE | 参数事件引擎 | `NodeId + ParameterIndex` 更新正确 Node 且不重编译 Graph；Queue 溢出可观察；每 Block 消费有固定上限 | T005, T011 | `drainUpTo()` 提供硬上限；测试覆盖 FIFO、剩余事件、零预算、Queue 满载回压及 CompiledGraph 路由 |
 | T008 | P0 | DONE | 参数平滑 | Gain/Drive 变化按 Descriptor 时长平滑；快速变化不产生明显 Zipper Noise；时长测试通过 | T007 | Gain 与 SoftClip Drive 的确定性 10 ms 时长测试通过 |
 | T009 | P0 | DONE | `GraphDescription` | 稳定的 Node/Connection 描述可持久化线性 Graph | T004 | Node/Connection 描述已被编译和执行测试覆盖；Serializer 属于 T021 |
