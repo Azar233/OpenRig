@@ -19,4 +19,5 @@ iplug_add_plugin(${PROJECT_NAME}
         ${OPENRIG_STANDALONE_DEFINES}
     LINK
         OpenRig::IPlugAdapter
+        OpenRig::DSP
 )

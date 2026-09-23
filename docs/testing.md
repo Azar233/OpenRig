@@ -83,6 +83,8 @@ Graph Swap 压力测试需在 Control Producer 持续发布有效 Graph 并回�
 
 Standalone 至少进行 48 kHz、128 Samples、30 分钟的 Soak Test；期间 Crash、Deadlock、Graph Corruption 和 Audio Thread Allocation 均为 0。需记录 Driver/Audio Interface、实际 Dropout、CPU 和 OS，因为设备与系统调度不完全由 DSP 决定。
 
+ASIO 的具体操作步骤和证据字段见 [ASIO 真实设备 Smoke/Soak 测试](asio-smoke-test.md)。
+
 v0.1 Release Candidate 前必须满足：
 
 - 该里程碑的所有 P0 任务均标记 `DONE`；

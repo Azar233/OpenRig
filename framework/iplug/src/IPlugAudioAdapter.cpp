@@ -2,9 +2,13 @@
 
 namespace openrig::framework::iplug
 {
-void IPlugAudioAdapter::prepare(AudioEngine& engine, const PrepareSpec& spec)
+void IPlugAudioAdapter::prepare(
+    AudioEngine& engine,
+    const PrepareSpec& spec,
+    const OutputChannelPolicy outputPolicy)
 {
     spec_ = spec;
+    outputPolicy_ = outputPolicy;
     inputStorage_.resize(static_cast<std::size_t>(spec.numInputChannels) * spec.maxBlockSize);
     outputStorage_.resize(static_cast<std::size_t>(spec.numOutputChannels) * spec.maxBlockSize);
     inputChannels_.resize(spec.numInputChannels);

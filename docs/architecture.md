@@ -120,6 +120,8 @@ iPlug2 ProcessBlock
   -> active CompiledGraph
 ```
 
+M1 Standalone 的 Core Graph 固定为 mono Gain → SoftClip → Gain，并在设备启动、Callback 开始前完成编译与 Publish。产品要求的 stereo 输出由 `IPlugAudioAdapter` 的显式 `DuplicateMono` 策略在 Framework 边界完成；Core Graph 不隐式改变声道数，其他 Host 默认仍清零超出 Core Layout 的输出通道。
+
 v0.1 对 Host 暴露的参数限定为 Input/Output Gain 和固定数量的 Macro。动态内部 Node 不应迫使 Core 承担不稳定的 VST 动态参数身份。
 
 `IPlugAudioAdapter` 只依赖 Core，并使用预分配 planar float32 Buffer 隔离 iPlug2 默认的 double `sample`。iPlug2 类型只存在于 `framework/iplug/standalone` 入口；`core/`、`dsp/` 和 Adapter 公共接口均不包含 iPlug2 Header。

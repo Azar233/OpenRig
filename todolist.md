@@ -17,10 +17,10 @@
 | W1：Graph/参数闭环（已完成） | T005–T011、T013；已完成参数路由、声道能力、结构化错误和安全失败路径 | T004 已完成 | Gain → SoftClip → Gain 已通过正负向与可变 Block 测试，无需 iPlug2 |
 | W2：AudioEngine/实时生命周期（已完成） | T042、T012、T037a；已建立框架无关的 Callback 边界、Graph Publish/Retire 与有界参数消费 | W1 的接口和基础执行闭环 | 100,000 Block 压力通过；Audio Thread 检测到的分配和 Graph 析构均为 0 |
 | W3：iPlug2 依赖与适配（IN REVIEW） | T002 已固定版本并生成 Standalone；T043 Adapter 已接到 AudioEngine | T042 已完成 | Debug/Release 与关闭 iPlug2 的独立构建均通过；ASIO 许可已选 GPLv3，iPlug2OOS 独立授权声明仍待确认 |
-| W4：真实设备链路 | T045、T003；固定 GPLv3 ASIO SDK，再完成设备输入 → Adapter → AudioEngine → 默认 Graph → 设备输出 | W1、W2、W3 汇合 | ASIO Build 可重复；48 kHz/128 Samples 下可弹奏并记录设备配置及 Dropout |
+| W4：真实设备链路（IN PROGRESS） | T045、T003；固定 GPLv3 ASIO SDK，再完成设备输入 → Adapter → AudioEngine → 默认 Graph → 设备输出 | W1、W2、W3 汇合 | 软件链路与 stereo 映射已完成；仍需在 48 kHz/128 Samples 下实测并记录 Dropout |
 | W5：测试与验收 | T041 可尽早启动 CI；T044 汇总独立 CTest、压力测试和真实设备 Soak | 自动测试可随 W1/W2 开始；最终验收依赖 W4 | Debug/Release CI 通过，真实设备完成 30 分钟 Smoke Soak |
 
-W1、W2 和 T045 已完成；W3 的代码与构建已完成并进入 Review。项目已选择 `GPL-3.0-only`，固定 ASIO SDK 的 Debug/Release Build 与 CTest 均已通过。当前设备关键路径进入 T003：加载默认 Graph，并在真实 ASIO 设备上完成通道选择、48 kHz/128 Samples 与 30 分钟 Soak。T041 Windows CI 可并行推进。T021a 最小 Preset Round-trip **不阻塞 W1–W5 的设备关键路径**，但仍是完整 M1 的完成条件。
+W1、W2 和 T045 已完成；W3 的代码与构建已完成并进入 Review。T003 的软件链路已完成：Standalone 会在 Callback 启动前发布默认 Gain → SoftClip → Gain，Adapter 显式将 mono Core 输出复制到 stereo Host。当前剩余关键门禁是真实 ASIO 设备上的通道选择、参数控制、48 kHz/128 Samples 与 30 分钟 Soak。T041 Windows CI 可并行推进。T021a 最小 Preset Round-trip **不阻塞 W1–W5 的设备关键路径**，但仍是完整 M1 的完成条件。
 
 ### 采纳边界与风险
 
@@ -35,9 +35,9 @@ W1、W2 和 T045 已完成；W3 的代码与构建已完成并进入 Review。�
 
 | ID | 优先级 | 状态 | 任务 | 验收标准 | 依赖 | 备注 / 证据 |
 |---|---:|---|---|---|---|---|
-| T001 | P0 | DONE | 仓库与 CMake 骨架 | Debug/Release 可配置；具备 Core/DSP/Sandbox/Test Target；构建步骤有文档 | — | VS2022 x64 Debug、Release 及 warnings-as-errors 构建通过；当前 Debug/Release CTest 均为 6/6；Sandbox 输出 `0.7` |
-| T002 | P0 | IN REVIEW | 固定 iPlug2OOS 并生成 Standalone 空壳 | iPlug2OOS 模板和 iPlug2 Core 均固定精确 commit，登记 License/传递依赖；新增 `OPENRIG_BUILD_IPLUG2` 开关；Windows x64 Debug/Release 可构建；关闭开关时 Core/DSP/Test 仍独立构建 | T001 | 固定 `9b214c1`/`b64192f`；`iplug2` Preset 的 Debug/Release 均生成 `OpenRigStandalone.exe`；OFF 构建 6/6。iPlug2OOS 独立 License 声明待确认，因此暂不标 DONE |
-| T003 | P0 | TODO | 真实设备运行默认 Graph | 可选 ASIO 设备及已验证的输入/输出通道；mono 输入经过 Gain → SoftClip → Gain 到 stereo 输出；参数实时修改；启停和失败安全 | T010, T011, T012, T043, T045 | W4；记录声卡、驱动、Sample Rate、请求/实际 Block、通道、时长及 Dropout；任意通道支持须实测 |
+| T001 | P0 | DONE | 仓库与 CMake 骨架 | Debug/Release 可配置；具备 Core/DSP/Sandbox/Test Target；构建步骤有文档 | — | VS2022 x64 Debug、Release 及 warnings-as-errors 构建通过；当前 Debug/Release CTest 均为 7/7；Sandbox 输出 `0.7` |
+| T002 | P0 | IN REVIEW | 固定 iPlug2OOS 并生成 Standalone 空壳 | iPlug2OOS 模板和 iPlug2 Core 均固定精确 commit，登记 License/传递依赖；新增 `OPENRIG_BUILD_IPLUG2` 开关；Windows x64 Debug/Release 可构建；关闭开关时 Core/DSP/Test 仍独立构建 | T001 | 固定 `9b214c1`/`b64192f`；`iplug2` Preset 的 Debug/Release 均生成 `OpenRigStandalone.exe`；OFF 构建 7/7。iPlug2OOS 独立 License 声明待确认，因此暂不标 DONE |
+| T003 | P0 | IN PROGRESS | 真实设备运行默认 Graph | 可选 ASIO 设备及已验证的输入/输出通道；mono 输入经过 Gain → SoftClip → Gain 到 stereo 输出；参数实时修改；启停和失败安全 | T010, T011, T012, T043, T045 | 默认三节点 Graph 已在 `OnReset` 非运行回调阶段编译/Publish，mono→stereo Adapter 策略有测试；ASIO Debug/Release 与 CTest 7/7。注册表检测到 Realtek ASIO `3.1.10.8`，但尚未打开设备或完成参数/Soak 验收 |
 | T004 | P0 | DONE | 独立的 `openrig_core` Library | 无须 iPlug2/UI 即可构建与测试 | T001 | `openrig_core.lib` 在 Debug/Release 均构建通过，且不依赖 iPlug2/UI |
 | T005 | P0 | DONE | `AudioNode` 接口与 Gain Node | Gain 支持可变 Block；Bypass/Reset/Descriptor 测试通过 | T004 | `openrig_node_tests` 覆盖 Descriptor、Reset、Bypass 与 10 ms 平滑；Graph 执行测试覆盖可变 Block |
 | T006 | P0 | DONE | Buffer/Process 接口 | Planar View 不拥有内存；Process 无分配；边界有文档 | T004 | Planar View 与非法 Buffer/Block 安全边界已落地；T037a 的测试 Hook 验证 100,000 Block 实时处理零堆分配 |
@@ -52,9 +52,9 @@ W1、W2 和 T045 已完成；W3 的代码与构建已完成并进入 Review。�
 | T037a | P0 | DONE | 实时分配 Guard | 测试构建能捕获 `process()` 内的 `new`/容器增长；100,000 Block 参数与 Graph Swap 压力通过 | T042, T012 | 测试专用全局分配 Hook 已用主动 `new` 校准；100,000 Block 参数/Swap 压力检测到 0 次实时分配、0 次实时 Graph 析构；零锁和 Race 仍按完整 T037 审计 |
 | T041 | P0 | TODO | M1 Windows CI | 从 clean checkout 完成 Debug/Release 构建并运行当前 CTest；保留日志和产物；T044 新增的测试应自动纳入 | T001 | 可立即与 W1/W3 并行，不等待设备；硬件 Soak 不放在 GitHub 托管 Runner |
 | T042 | P0 | DONE | `AudioEngine::process()` 边界 | Core 内建立框架无关的处理入口；持有 active Graph；每 Block 有界消费参数；无 Graph 时安全直通或静音；Callback 入口使用 `RealtimeScope` | T007, T011 | 已实现框架无关入口、无 Graph 同布局直通/异布局静音、默认每 Block 64 个参数预算及 RealtimeScope；Adapter 只需单向调用 |
-| T043 | P0 | DONE | iPlug2 Audio Adapter | `ProcessBlock` 单向调用 `AudioEngine::process()`；覆盖 mono/stereo、零输入、可变/超大 Block 和 Sample 格式边界；Core/DSP 不含 iPlug2 类型 | T002, T042 | Adapter 公共层无 iPlug2 Header；预分配 float32 转换 Buffer；float/double、mono/stereo、零输入、额外输出、可变/超大 Block 测试通过；Standalone 调用链已编译 |
-| T044 | P0 | IN PROGRESS | M1 集成与设备验收 | 拆分 Node/Graph/参数/Swap/Adapter 为独立 CTest；自动 100,000 Block 压力；真实 ASIO 48 kHz/128、30 分钟 Soak 并记录时序与 Dropout | T003, T012, T037a, T041 | 已拆分六组 CTest 并完成 100,000 Block 压力及 Adapter 自动测试；真实设备/ASIO/30 分钟 Soak 待后续任务 |
-| T045 | P0 | DONE | GPLv3 ASIO SDK 固定与构建接线 | 根项目采用 `GPL-3.0-only`；固定带当前双许可文本的 ASIO SDK；ASIO Build 不编译 RtAudio 内嵌旧 SDK；Debug/Release 可构建并通过 CTest | T002, T043 | 固定 `496a0765`，新增 ADR-0006 与 `iplug2-asio` Preset；MSVC Debug/Release 均生成 Standalone，CTest 均 6/6；生成的 `.vcxproj` 仅引用 `third_party/asio` 的 SDK Source |
+| T043 | P0 | DONE | iPlug2 Audio Adapter | `ProcessBlock` 单向调用 `AudioEngine::process()`；覆盖 mono/stereo、零输入、可变/超大 Block 和 Sample 格式边界；Core/DSP 不含 iPlug2 类型 | T002, T042 | Adapter 公共层无 iPlug2 Header；预分配 float32 转换 Buffer；float/double、mono/stereo、零输入、额外输出、可变/超大 Block 及显式 `DuplicateMono` 策略测试通过 |
+| T044 | P0 | IN PROGRESS | M1 集成与设备验收 | 拆分 Node/Graph/参数/Swap/Adapter 为独立 CTest；自动 100,000 Block 压力；真实 ASIO 48 kHz/128、30 分钟 Soak 并记录时序与 Dropout | T003, T012, T037a, T041 | 已拆分七组 CTest 并完成默认 Graph、100,000 Block 压力及 Adapter 自动测试；真实设备/ASIO/30 分钟 Soak 待后续任务 |
+| T045 | P0 | DONE | GPLv3 ASIO SDK 固定与构建接线 | 根项目采用 `GPL-3.0-only`；固定带当前双许可文本的 ASIO SDK；ASIO Build 不编译 RtAudio 内嵌旧 SDK；Debug/Release 可构建并通过 CTest | T002, T043 | 固定 `496a0765`，新增 ADR-0006 与 `iplug2-asio` Preset；MSVC Debug/Release 均生成 Standalone，CTest 均 7/7；生成的 `.vcxproj` 仅引用 `third_party/asio` 的 SDK Source |
 
 ### M1 完成门槛
 

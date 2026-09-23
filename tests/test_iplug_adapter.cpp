@@ -106,6 +106,22 @@ int main()
     tests.check(near(static_cast<float>(left.front()), 0.8F) && near(static_cast<float>(right.back()), 0.8F), "Both stereo channels receive Core output");
     tests.check(near(static_cast<float>(extra.front()), 0.0F), "Extra host output channels are cleared");
 
+    openrig::AudioEngine duplicatedMonoEngine(monoSpec);
+    IPlugAudioAdapter duplicatedMonoAdapter;
+    duplicatedMonoAdapter.prepare(
+        duplicatedMonoEngine,
+        monoSpec,
+        openrig::framework::iplug::OutputChannelPolicy::DuplicateMono);
+    left.fill(0.0);
+    right.fill(0.0);
+    std::array<double*, 2> duplicatedOutputs{left.data(), right.data()};
+    tests.check(
+        duplicatedMonoAdapter.process(doubleInputs.data(), 1, duplicatedOutputs.data(), 2, maximumFrames) == GraphProcessStatus::Ok,
+        "Adapter accepts explicit mono duplication policy");
+    tests.check(
+        near(static_cast<float>(left.front()), 0.8F) && near(static_cast<float>(right.back()), 0.8F),
+        "Explicit policy duplicates mono Core output to stereo Host channels");
+
     floatOutput.fill(3.0F);
     const auto oversized = monoAdapter.process(floatInputs.data(), 1, floatOutputs.data(), 1, maximumFrames + 1);
     tests.check(oversized == GraphProcessStatus::BlockTooLarge, "Over-max host block reports a safe status");

@@ -13,7 +13,7 @@ OpenRig 是模块化、实时的吉他 DSP 平台。首个产品目标是 Window
 
 ## 当前状态
 
-当前交付的是 M1 架构骨架，**不是**已发布的吉他效果器。它包含可构建的 Core/DSP、线性 Graph、`AudioEngine`、Gain/SoftClip、iPlug2 Audio Adapter、Windows Standalone 空壳和六组独立 CTest。默认 Standalone 只启用 DirectSound/MME；GPLv3 ASIO 构建已具备独立 Preset，默认 Graph、真实设备链路与产品 UI 仍未完成。
+当前交付的是 M1 架构骨架，**不是**已发布的吉他效果器。它包含可构建的 Core/DSP、线性 Graph、`AudioEngine`、Gain/SoftClip、iPlug2 Audio Adapter、会加载默认 Gain → SoftClip → Gain Graph 的 Windows Standalone，以及七组独立 CTest。默认 Standalone 只启用 DirectSound/MME；GPLv3 ASIO 构建已具备独立 Preset，真实设备验收与产品 UI 仍未完成。
 
 进度以 [`todolist.md`](todolist.md) 为准。架构与质量门禁见 [`docs/`](docs/README.md)。
 

@@ -10,6 +10,7 @@ function(openrig_add_test target source)
 endfunction()
 
 openrig_add_test(openrig_node_tests test_nodes.cpp)
+openrig_add_test(openrig_default_graph_tests test_default_graph.cpp)
 openrig_add_test(openrig_graph_compiler_tests test_graph_compiler.cpp)
 openrig_add_test(openrig_graph_execution_tests test_graph_execution.cpp)
 openrig_add_test(openrig_parameter_transport_tests test_parameter_transport.cpp)

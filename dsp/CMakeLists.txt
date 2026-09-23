@@ -1,4 +1,5 @@
 add_library(openrig_dsp STATIC
+    src/DefaultGraph.cpp
     src/GainNode.cpp
     src/SoftClipNode.cpp
 )

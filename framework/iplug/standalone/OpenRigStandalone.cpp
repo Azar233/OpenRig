@@ -1,8 +1,10 @@
 #include "OpenRigStandalone.h"
 #include "IPlug_include_in_plug_src.h"
+#include "openrig/dsp/DefaultGraph.h"
 
 #include <algorithm>
 #include <cstdint>
+#include <utility>
 
 OpenRigStandalone::OpenRigStandalone(const iplug::InstanceInfo& info)
     : iplug::Plugin(info, iplug::MakeConfig(0, 1))
@@ -14,11 +16,22 @@ void OpenRigStandalone::OnReset()
 {
     const auto sampleRate = GetSampleRate() > 0.0 ? GetSampleRate() : 48'000.0;
     const auto maximumFrames = static_cast<std::uint32_t>(std::max(GetBlockSize(), 1));
-    const openrig::PrepareSpec spec{sampleRate, maximumFrames, 1, 2};
+    const openrig::PrepareSpec spec{sampleRate, maximumFrames, 1, 1};
 
     adapter_.reset();
-    engine_ = std::make_unique<openrig::AudioEngine>(spec);
-    adapter_.prepare(*engine_, spec);
+    auto nextEngine = std::make_unique<openrig::AudioEngine>(spec);
+    auto compiled = openrig::dsp::compileDefaultGraph(spec);
+    if (!compiled || !nextEngine->tryPublishGraph(std::move(compiled.graph)))
+    {
+        engine_.reset();
+        return;
+    }
+
+    engine_ = std::move(nextEngine);
+    adapter_.prepare(
+        *engine_,
+        spec,
+        openrig::framework::iplug::OutputChannelPolicy::DuplicateMono);
 }
 
 void OpenRigStandalone::ProcessBlock(iplug::sample** inputs, iplug::sample** outputs, const int nFrames)

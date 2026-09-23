@@ -9,10 +9,19 @@
 
 namespace openrig::framework::iplug
 {
+enum class OutputChannelPolicy
+{
+    ClearExtra,
+    DuplicateMono,
+};
+
 class IPlugAudioAdapter
 {
 public:
-    void prepare(AudioEngine& engine, const PrepareSpec& spec);
+    void prepare(
+        AudioEngine& engine,
+        const PrepareSpec& spec,
+        OutputChannelPolicy outputPolicy = OutputChannelPolicy::ClearExtra);
     void reset() noexcept { engine_ = nullptr; }
 
     [[nodiscard]] const PrepareSpec& spec() const noexcept { return spec_; }
@@ -69,7 +78,16 @@ public:
                 continue;
             if (channel >= spec_.numOutputChannels)
             {
-                std::fill_n(destination, numFrames, static_cast<HostSample>(0));
+                if (outputPolicy_ == OutputChannelPolicy::DuplicateMono && spec_.numOutputChannels == 1)
+                {
+                    const auto* source = outputChannels_.front();
+                    for (std::uint32_t frame = 0; frame < numFrames; ++frame)
+                        destination[frame] = static_cast<HostSample>(source[frame]);
+                }
+                else
+                {
+                    std::fill_n(destination, numFrames, static_cast<HostSample>(0));
+                }
                 continue;
             }
             const auto* source = outputChannels_[channel];
@@ -82,6 +100,7 @@ public:
 private:
     AudioEngine* engine_ = nullptr;
     PrepareSpec spec_{};
+    OutputChannelPolicy outputPolicy_ = OutputChannelPolicy::ClearExtra;
     std::vector<Sample> inputStorage_;
     std::vector<Sample> outputStorage_;
     std::vector<Sample*> inputChannels_;
