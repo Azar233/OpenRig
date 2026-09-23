@@ -16,15 +16,16 @@
 |---|---|---|---|
 | W1：Graph/参数闭环（已完成） | T005–T011、T013；已完成参数路由、声道能力、结构化错误和安全失败路径 | T004 已完成 | Gain → SoftClip → Gain 已通过正负向与可变 Block 测试，无需 iPlug2 |
 | W2：AudioEngine/实时生命周期（已完成） | T042、T012、T037a；已建立框架无关的 Callback 边界、Graph Publish/Retire 与有界参数消费 | W1 的接口和基础执行闭环 | 100,000 Block 压力通过；Audio Thread 检测到的分配和 Graph 析构均为 0 |
-| W3：iPlug2 依赖与适配 | T002 先固定版本并生成 Standalone 空壳；T043 再将 Adapter 接到 AudioEngine | T002 可与 W1 并行；T043 依赖 T042 | 依赖可复现，且关闭 iPlug2 时 Core/DSP/Test 仍可独立构建 |
+| W3：iPlug2 依赖与适配（IN REVIEW） | T002 已固定版本并生成 Standalone；T043 Adapter 已接到 AudioEngine | T042 已完成 | Debug/Release 与关闭 iPlug2 的独立构建均通过；iPlug2OOS 独立授权声明与 ASIO 发布许可待确认 |
 | W4：真实设备链路 | T003；设备输入 → Adapter → AudioEngine → 默认 Graph → 设备输出 | W1、W2、W3 汇合 | 48 kHz/128 Samples 下可弹奏并记录设备配置及 Dropout |
 | W5：测试与验收 | T041 可尽早启动 CI；T044 汇总独立 CTest、压力测试和真实设备 Soak | 自动测试可随 W1/W2 开始；最终验收依赖 W4 | Debug/Release CI 通过，真实设备完成 30 分钟 Smoke Soak |
 
-W1、W2 已完成，下一步进入 W3 的 T002/T043，再与 W4 汇合。CI 不必等真实声卡接入才开始。T021a 最小 Preset Round-trip **不阻塞 W1–W5 的设备关键路径**，但仍是完整 M1 的完成条件。
+W1、W2 已完成；W3 的代码与构建已完成并进入 Review，但 ASIO 发布许可仍需决策。下一步可并行推进 T041 Windows CI 和 W4 的非 ASIO 设备链路；ASIO 验收须等待许可路径明确。T021a 最小 Preset Round-trip **不阻塞 W1–W5 的设备关键路径**，但仍是完整 M1 的完成条件。
 
 ### 采纳边界与风险
 
-- [iPlug2 官方 CMake 文档](https://iplug2.github.io/docs/md_cmake.html)列出 Windows Standalone App Target，[iPlug2OOS](https://github.com/iPlug2/iPlug2OOS)提供 Out-of-source 项目模板，因此 W3 的构建方向可行；但尚未为本项目选定或验证具体 commit。
+- 已固定 iPlug2OOS `9b214c1121a0da1e8db14b86a565c942a3bfea7e` 及其 iPlug2 Core `b64192fe18afd9bc9a1fe324db5aceb48f4a0eee`；Windows x64 Debug/Release Standalone 构建通过。固定的 iPlug2OOS revision 没有独立 `LICENSE` 文件，Release 前需确认模板授权声明。
+- Steinberg 当前公开的 ASIO 开源路径为 GPLv3，另有 proprietary 路径。`OPENRIG_IPLUG2_ENABLE_ASIO` 默认关闭并排除 SDK 源码；不得在未记录项目 License 决策时发布 ASIO Build。
 - iPlug2 的 [ASIO 非首输入通道选择 Issue #1281](https://github.com/iPlug2/iPlug2/issues/1281)目前仍为 open。T002/T003 必须用选定版本和实际多通道设备复测；若有缺陷，需决定修复 Adapter、贡献上游修复或采用其他设备方案，不能把“任意通道可选”视为现成能力。
 - W1 的运行时参数路由应在编译阶段预建索引；Audio Thread 不得为查找而扩容或构造字符串。非法 Block 的静音/拒绝策略必须先验证 Buffer View 边界，避免“错误恢复”本身越界。
 - W2 的 SPSC 设计必须明确单 Producer/单 Consumer、Queue 满载与旧 Graph 回收策略。Audio Thread 不能因 Retire Queue 满而析构旧 Graph；多来源参数写入也不能未经仲裁直接共用一个 SPSC Producer。
@@ -34,8 +35,8 @@ W1、W2 已完成，下一步进入 W3 的 T002/T043，再与 W4 汇合。CI 不
 
 | ID | 优先级 | 状态 | 任务 | 验收标准 | 依赖 | 备注 / 证据 |
 |---|---:|---|---|---|---|---|
-| T001 | P0 | DONE | 仓库与 CMake 骨架 | Debug/Release 可配置；具备 Core/DSP/Sandbox/Test Target；构建步骤有文档 | — | VS2022 x64 Debug、Release 及 warnings-as-errors 构建通过；当前 Debug/Release CTest 均为 5/5；Sandbox 输出 `0.7` |
-| T002 | P0 | TODO | 固定 iPlug2OOS 并生成 Standalone 空壳 | iPlug2OOS 模板和 iPlug2 Core 均固定精确 commit，登记 License/传递依赖；新增 `OPENRIG_BUILD_IPLUG2` 开关；Windows x64 Debug/Release 可构建；关闭开关时 Core/DSP/Test 仍独立构建 | T001 | 属于 W3 可并行部分；不在此任务中接入完整 AudioEngine。复测官方 ASIO 通道选择风险 |
+| T001 | P0 | DONE | 仓库与 CMake 骨架 | Debug/Release 可配置；具备 Core/DSP/Sandbox/Test Target；构建步骤有文档 | — | VS2022 x64 Debug、Release 及 warnings-as-errors 构建通过；当前 Debug/Release CTest 均为 6/6；Sandbox 输出 `0.7` |
+| T002 | P0 | IN REVIEW | 固定 iPlug2OOS 并生成 Standalone 空壳 | iPlug2OOS 模板和 iPlug2 Core 均固定精确 commit，登记 License/传递依赖；新增 `OPENRIG_BUILD_IPLUG2` 开关；Windows x64 Debug/Release 可构建；关闭开关时 Core/DSP/Test 仍独立构建 | T001 | 固定 `9b214c1`/`b64192f`；`iplug2` Preset 的 Debug/Release 均生成 `OpenRigStandalone.exe`；OFF 构建 6/6。iPlug2OOS 独立 License 声明待确认，因此暂不标 DONE |
 | T003 | P0 | TODO | 真实设备运行默认 Graph | 可选 ASIO 设备及已验证的输入/输出通道；mono 输入经过 Gain → SoftClip → Gain 到 stereo 输出；参数实时修改；启停和失败安全 | T010, T011, T012, T043 | W4；记录声卡、驱动、Sample Rate、请求/实际 Block、通道、时长及 Dropout；任意通道支持须实测 |
 | T004 | P0 | DONE | 独立的 `openrig_core` Library | 无须 iPlug2/UI 即可构建与测试 | T001 | `openrig_core.lib` 在 Debug/Release 均构建通过，且不依赖 iPlug2/UI |
 | T005 | P0 | DONE | `AudioNode` 接口与 Gain Node | Gain 支持可变 Block；Bypass/Reset/Descriptor 测试通过 | T004 | `openrig_node_tests` 覆盖 Descriptor、Reset、Bypass 与 10 ms 平滑；Graph 执行测试覆盖可变 Block |
@@ -51,8 +52,8 @@ W1、W2 已完成，下一步进入 W3 的 T002/T043，再与 W4 汇合。CI 不
 | T037a | P0 | DONE | 实时分配 Guard | 测试构建能捕获 `process()` 内的 `new`/容器增长；100,000 Block 参数与 Graph Swap 压力通过 | T042, T012 | 测试专用全局分配 Hook 已用主动 `new` 校准；100,000 Block 参数/Swap 压力检测到 0 次实时分配、0 次实时 Graph 析构；零锁和 Race 仍按完整 T037 审计 |
 | T041 | P0 | TODO | M1 Windows CI | 从 clean checkout 完成 Debug/Release 构建并运行当前 CTest；保留日志和产物；T044 新增的测试应自动纳入 | T001 | 可立即与 W1/W3 并行，不等待设备；硬件 Soak 不放在 GitHub 托管 Runner |
 | T042 | P0 | DONE | `AudioEngine::process()` 边界 | Core 内建立框架无关的处理入口；持有 active Graph；每 Block 有界消费参数；无 Graph 时安全直通或静音；Callback 入口使用 `RealtimeScope` | T007, T011 | 已实现框架无关入口、无 Graph 同布局直通/异布局静音、默认每 Block 64 个参数预算及 RealtimeScope；Adapter 只需单向调用 |
-| T043 | P0 | TODO | iPlug2 Audio Adapter | `ProcessBlock` 单向调用 `AudioEngine::process()`；覆盖 mono/stereo、零输入、可变/超大 Block 和 Sample 格式边界；Core/DSP 不含 iPlug2 类型 | T002, T042 | W3 汇合部分；需验证选定版本的实际 Callback/设备行为 |
-| T044 | P0 | IN PROGRESS | M1 集成与设备验收 | 拆分 Node/Graph/参数/Swap/Adapter 为独立 CTest；自动 100,000 Block 压力；真实 ASIO 48 kHz/128、30 分钟 Soak 并记录时序与 Dropout | T003, T012, T037a, T041 | 已拆分 Node、Graph Compiler、Graph Execution、Parameter Transport、AudioEngine 五组 CTest，并完成 100,000 Block 压力；Adapter 与硬件验收待后续任务 |
+| T043 | P0 | DONE | iPlug2 Audio Adapter | `ProcessBlock` 单向调用 `AudioEngine::process()`；覆盖 mono/stereo、零输入、可变/超大 Block 和 Sample 格式边界；Core/DSP 不含 iPlug2 类型 | T002, T042 | Adapter 公共层无 iPlug2 Header；预分配 float32 转换 Buffer；float/double、mono/stereo、零输入、额外输出、可变/超大 Block 测试通过；Standalone 调用链已编译 |
+| T044 | P0 | IN PROGRESS | M1 集成与设备验收 | 拆分 Node/Graph/参数/Swap/Adapter 为独立 CTest；自动 100,000 Block 压力；真实 ASIO 48 kHz/128、30 分钟 Soak 并记录时序与 Dropout | T003, T012, T037a, T041 | 已拆分六组 CTest 并完成 100,000 Block 压力及 Adapter 自动测试；真实设备/ASIO/30 分钟 Soak 待后续任务 |
 
 ### M1 完成门槛
 

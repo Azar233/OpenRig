@@ -111,7 +111,7 @@ Node 不得自行打开文件。`ResourceManager` 接收请求，Worker 加载�
 
 ## 平台适配层
 
-未来的 iPlug2 调用路径：
+当前 iPlug2 调用路径：
 
 ```text
 iPlug2 ProcessBlock
@@ -121,3 +121,5 @@ iPlug2 ProcessBlock
 ```
 
 v0.1 对 Host 暴露的参数限定为 Input/Output Gain 和固定数量的 Macro。动态内部 Node 不应迫使 Core 承担不稳定的 VST 动态参数身份。
+
+`IPlugAudioAdapter` 只依赖 Core，并使用预分配 planar float32 Buffer 隔离 iPlug2 默认的 double `sample`。iPlug2 类型只存在于 `framework/iplug/standalone` 入口；`core/`、`dsp/` 和 Adapter 公共接口均不包含 iPlug2 Header。

@@ -18,6 +18,8 @@
         "CMAKE_CXX_EXTENSIONS": "OFF",
         "OPENRIG_BUILD_TESTS": "ON",
         "OPENRIG_BUILD_SANDBOX": "ON",
+        "OPENRIG_BUILD_IPLUG2": "OFF",
+        "OPENRIG_IPLUG2_ENABLE_ASIO": "OFF",
         "OPENRIG_WARNINGS_AS_ERRORS": "OFF"
       }
     },
@@ -28,6 +30,16 @@
       "binaryDir": "${sourceDir}/build/ci",
       "cacheVariables": {
         "OPENRIG_WARNINGS_AS_ERRORS": "ON"
+      }
+    },
+    {
+      "name": "iplug2",
+      "inherits": "dev",
+      "displayName": "OpenRig iPlug2 standalone build",
+      "binaryDir": "${sourceDir}/build/iplug2",
+      "cacheVariables": {
+        "OPENRIG_BUILD_IPLUG2": "ON",
+        "OPENRIG_IPLUG2_ENABLE_ASIO": "OFF"
       }
     }
   ],
@@ -46,6 +58,16 @@
       "name": "ci-release",
       "configurePreset": "ci",
       "configuration": "Release"
+    },
+    {
+      "name": "iplug2-debug",
+      "configurePreset": "iplug2",
+      "configuration": "Debug"
+    },
+    {
+      "name": "iplug2-release",
+      "configurePreset": "iplug2",
+      "configuration": "Release"
     }
   ],
   "testPresets": [
@@ -60,6 +82,22 @@
     {
       "name": "ci-release",
       "configurePreset": "ci",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "iplug2-debug",
+      "configurePreset": "iplug2",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "iplug2-release",
+      "configurePreset": "iplug2",
       "configuration": "Release",
       "output": {
         "outputOnFailure": true

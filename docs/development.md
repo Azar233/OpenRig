@@ -7,7 +7,7 @@
 - 仓库内置 Preset 使用 Visual Studio 2022；其他平台可显式选择本机 CMake generator
 - Git
 
-当前骨架不会自动下载 iPlug2、NAM、WDF 或 JSON 依赖。应在对应任务中固定版本、完成 License 审查后再接入。
+iPlug2OOS 已作为递归 Git submodule 固定；默认开发构建不会加载它。`iplug2` Preset 配置固定 iPlug2 时，上游 CMake 还会按固定版本取得 WIL/WebView2 配置期依赖。NAM、WDF 与 JSON 依赖尚未接入。
 
 ## 任务流程
 
@@ -48,3 +48,18 @@ ctest --preset dev-debug
 ```
 
 涉及 Release 音频行为的变更还应运行 Release 测试与 `docs/testing.md` 中规定的 Benchmark。
+
+## iPlug2 Standalone
+
+首次构建先取得递归 submodule：
+
+```powershell
+git submodule update --init --recursive third_party/iPlug2OOS
+cmake --preset iplug2
+cmake --build --preset iplug2-debug
+ctest --preset iplug2-debug
+cmake --build --preset iplug2-release
+ctest --preset iplug2-release
+```
+
+产物位于 `build/iplug2/out/OpenRigStandalone.exe`。`OPENRIG_IPLUG2_ENABLE_ASIO` 默认关闭；在明确选择 GPLv3-compatible 项目许可或取得 proprietary ASIO 许可前，不得在发布构建中开启。

@@ -14,7 +14,7 @@
 | Benchmark | mean/p95/p99 与 Realtime Factor | 机器、工具链和构建配置元数据 |
 | Soak/Release Test | 连续的端到端处理 | 时长、采样率/Block、dropout/crash/deadlock 计数 |
 
-当前无第三方测试依赖，并已拆分为 `openrig_node_tests`、`openrig_graph_compiler_tests`、`openrig_graph_execution_tests`、`openrig_parameter_transport_tests` 和 `openrig_audio_engine_tests` 五个独立 CTest。AudioEngine 测试包含 Graph Swap、Queue 回压、所有权与 100,000 Block 实时分配压力；Adapter 建立后继续采用独立 Test Target。若以后引入 Catch2，必须固定版本，且不能阻塞当前门禁。
+当前测试本身无第三方框架依赖，并已拆分为 `openrig_node_tests`、`openrig_graph_compiler_tests`、`openrig_graph_execution_tests`、`openrig_parameter_transport_tests`、`openrig_audio_engine_tests` 和 `openrig_iplug_adapter_tests` 六个独立 CTest。AudioEngine 测试包含 Graph Swap、Queue 回压、所有权与 100,000 Block 实时分配压力；Adapter 测试覆盖 float/double、mono/stereo、零输入、额外输出、可变及超大 Block。若以后引入 Catch2，必须固定版本，且不能阻塞当前门禁。
 
 ## 每个 Audio Node 必测的输入
 

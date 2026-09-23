@@ -11,8 +11,13 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(OpenRigOptions)
 include(OpenRigWarnings)
 
+if(MSVC AND OPENRIG_BUILD_IPLUG2)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
+
 add_subdirectory(core)
 add_subdirectory(dsp)
+add_subdirectory(framework/iplug)
 
 if(OPENRIG_BUILD_SANDBOX)
     add_subdirectory(apps/standalone)
