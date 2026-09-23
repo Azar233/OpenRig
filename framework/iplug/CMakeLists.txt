@@ -37,7 +37,47 @@ if(OPENRIG_BUILD_IPLUG2)
     include("${IPLUG2_DIR}/iPlug2.cmake")
     find_package(iPlug2 REQUIRED)
 
-    if(WIN32 AND NOT OPENRIG_IPLUG2_ENABLE_ASIO)
+    if(WIN32 AND OPENRIG_IPLUG2_ENABLE_ASIO)
+        set(OPENRIG_ASIO_SDK_DIR
+            "${PROJECT_SOURCE_DIR}/third_party/asio"
+        )
+
+        set(_openrig_asio_required_files
+            "${OPENRIG_ASIO_SDK_DIR}/LICENSE.txt"
+            "${OPENRIG_ASIO_SDK_DIR}/common/asio.cpp"
+            "${OPENRIG_ASIO_SDK_DIR}/common/asio.h"
+            "${OPENRIG_ASIO_SDK_DIR}/host/asiodrivers.cpp"
+            "${OPENRIG_ASIO_SDK_DIR}/host/pc/asiolist.cpp"
+        )
+        foreach(_openrig_asio_file IN LISTS _openrig_asio_required_files)
+            if(NOT EXISTS "${_openrig_asio_file}")
+                message(FATAL_ERROR
+                    "Pinned GPLv3 ASIO SDK is missing: ${_openrig_asio_file}. "
+                    "Run: git submodule update --init --recursive"
+                )
+            endif()
+        endforeach()
+
+        get_target_property(_openrig_app_sources iPlug2::APP INTERFACE_SOURCES)
+        foreach(_openrig_app_source IN LISTS _openrig_app_sources)
+            get_filename_component(_openrig_app_source_name "${_openrig_app_source}" NAME)
+            if(_openrig_app_source_name MATCHES "^(asio|asiodrivers|asiolist)\\.cpp$")
+                list(REMOVE_ITEM _openrig_app_sources "${_openrig_app_source}")
+            endif()
+        endforeach()
+        list(APPEND _openrig_app_sources
+            "${OPENRIG_ASIO_SDK_DIR}/common/asio.cpp"
+            "${OPENRIG_ASIO_SDK_DIR}/host/asiodrivers.cpp"
+            "${OPENRIG_ASIO_SDK_DIR}/host/pc/asiolist.cpp"
+        )
+        set_property(TARGET iPlug2::APP PROPERTY INTERFACE_SOURCES "${_openrig_app_sources}")
+        target_include_directories(iPlug2::APP BEFORE INTERFACE
+            "${OPENRIG_ASIO_SDK_DIR}/common"
+            "${OPENRIG_ASIO_SDK_DIR}/host"
+            "${OPENRIG_ASIO_SDK_DIR}/host/pc"
+        )
+        message(STATUS "OpenRig: ASIO backend enabled with the pinned GPLv3 SDK")
+    elseif(WIN32)
         get_target_property(_openrig_app_sources iPlug2::APP INTERFACE_SOURCES)
         list(FILTER _openrig_app_sources EXCLUDE REGEX "[/\\\\](asio|asiodrivers|asiolist|iasiothiscallresolver)\\.cpp$")
         set_property(TARGET iPlug2::APP PROPERTY INTERFACE_SOURCES "${_openrig_app_sources}")
@@ -45,7 +85,7 @@ if(OPENRIG_BUILD_IPLUG2)
         get_target_property(_openrig_app_definitions iPlug2::APP INTERFACE_COMPILE_DEFINITIONS)
         list(REMOVE_ITEM _openrig_app_definitions __WINDOWS_ASIO__)
         set_property(TARGET iPlug2::APP PROPERTY INTERFACE_COMPILE_DEFINITIONS "${_openrig_app_definitions}")
-        message(STATUS "OpenRig: ASIO backend disabled pending an explicit license decision")
+        message(STATUS "OpenRig: ASIO backend disabled")
     endif()
 
     add_subdirectory(standalone)

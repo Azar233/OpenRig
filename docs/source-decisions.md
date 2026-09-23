@@ -19,6 +19,7 @@
 - 自研 DSP Core、Graph、参数和资源管理系统。
 - NAM Core 封装在 `integrations/nam/`；WDF 封装在 `integrations/wdf/`。
 - 内部音频格式为 planar float32。
+- 项目按 `GPL-3.0-only` 开源；ASIO SDK 使用 GPLv3 路径并固定精确 Commit。
 - Preset 使用带版本号的 JSON，并使用稳定的字符串标识。
 - 首个可运行产品目标为 Windows x64 Standalone。
 

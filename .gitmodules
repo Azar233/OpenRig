@@ -1,3 +1,6 @@
 [submodule "third_party/iPlug2OOS"]
 	path = third_party/iPlug2OOS
 	url = https://github.com/iPlug2/iPlug2OOS.git
+[submodule "third_party/asio"]
+	path = third_party/asio
+	url = https://github.com/audiosdk/asio.git

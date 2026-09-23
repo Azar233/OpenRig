@@ -13,7 +13,7 @@ OpenRig 是模块化、实时的吉他 DSP 平台。首个产品目标是 Window
 
 ## 当前状态
 
-当前交付的是 M1 架构骨架，**不是**已发布的吉他效果器。它包含可构建的 Core/DSP、线性 Graph、`AudioEngine`、Gain/SoftClip、iPlug2 Audio Adapter、Windows Standalone 空壳和六组独立 CTest。默认 Standalone 目前只启用 DirectSound/MME；默认 Graph、ASIO 许可决策、真实设备链路与产品 UI 仍未完成。
+当前交付的是 M1 架构骨架，**不是**已发布的吉他效果器。它包含可构建的 Core/DSP、线性 Graph、`AudioEngine`、Gain/SoftClip、iPlug2 Audio Adapter、Windows Standalone 空壳和六组独立 CTest。默认 Standalone 只启用 DirectSound/MME；GPLv3 ASIO 构建已具备独立 Preset，默认 Graph、真实设备链路与产品 UI 仍未完成。
 
 进度以 [`todolist.md`](todolist.md) 为准。架构与质量门禁见 [`docs/`](docs/README.md)。
 
@@ -44,6 +44,14 @@ cmake --build --preset iplug2-release
 ctest --preset iplug2-release
 ```
 
+构建 GPLv3 ASIO 版本：
+
+```powershell
+cmake --preset iplug2-asio
+cmake --build --preset iplug2-asio-release
+ctest --preset iplug2-asio-release
+```
+
 ## 不可破坏的实时边界
 
 1. `GraphDescription` 是可编辑的 Control Thread 状态；`CompiledGraph` 是已准备好的实时执行状态。
@@ -53,3 +61,7 @@ ctest --preset iplug2-release
 5. 新增第三方依赖前，必须固定版本、记录 License；涉及架构时补充 ADR，并通过相关测试。
 
 修改 Core 公共接口前，请先阅读 [工程规范](docs/engineering-standard.md)。
+
+## License
+
+OpenRig 按 [GNU GPLv3（GPL-3.0-only）](LICENSE) 开源。分发 Binary 时必须提供对应源码和构建所需内容；具体工程要求见 [许可与发布规范](docs/licensing.md)。第三方组件保留各自的 Copyright、License 和 Trademark 条款。

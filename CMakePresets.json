@@ -41,6 +41,15 @@
         "OPENRIG_BUILD_IPLUG2": "ON",
         "OPENRIG_IPLUG2_ENABLE_ASIO": "OFF"
       }
+    },
+    {
+      "name": "iplug2-asio",
+      "inherits": "iplug2",
+      "displayName": "OpenRig GPLv3 ASIO standalone build",
+      "binaryDir": "${sourceDir}/build/iplug2-asio",
+      "cacheVariables": {
+        "OPENRIG_IPLUG2_ENABLE_ASIO": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -67,6 +76,16 @@
     {
       "name": "iplug2-release",
       "configurePreset": "iplug2",
+      "configuration": "Release"
+    },
+    {
+      "name": "iplug2-asio-debug",
+      "configurePreset": "iplug2-asio",
+      "configuration": "Debug"
+    },
+    {
+      "name": "iplug2-asio-release",
+      "configurePreset": "iplug2-asio",
       "configuration": "Release"
     }
   ],
@@ -98,6 +117,22 @@
     {
       "name": "iplug2-release",
       "configurePreset": "iplug2",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "iplug2-asio-debug",
+      "configurePreset": "iplug2-asio",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "iplug2-asio-release",
+      "configurePreset": "iplug2-asio",
       "configuration": "Release",
       "output": {
         "outputOnFailure": true

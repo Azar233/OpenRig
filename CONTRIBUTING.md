@@ -8,6 +8,7 @@
 
 ## 变更要求
 
+- 提交贡献即表示你有权提交该内容，并同意按项目的 `GPL-3.0-only` 许可发布；详见 `docs/licensing.md`。
 - 每次提交保持主题集中；Commit 标题使用祈使语气，例如 `Add linear graph validation`。
 - 行为变更必须同步新增或更新测试。
 - 执行配置、构建、CTest 及任务专属检查。

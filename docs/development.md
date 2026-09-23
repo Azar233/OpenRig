@@ -51,10 +51,10 @@ ctest --preset dev-debug
 
 ## iPlug2 Standalone
 
-首次构建先取得递归 submodule：
+首次构建先取得全部递归 submodule：
 
 ```powershell
-git submodule update --init --recursive third_party/iPlug2OOS
+git submodule update --init --recursive
 cmake --preset iplug2
 cmake --build --preset iplug2-debug
 ctest --preset iplug2-debug
@@ -62,4 +62,16 @@ cmake --build --preset iplug2-release
 ctest --preset iplug2-release
 ```
 
-产物位于 `build/iplug2/out/OpenRigStandalone.exe`。`OPENRIG_IPLUG2_ENABLE_ASIO` 默认关闭；在明确选择 GPLv3-compatible 项目许可或取得 proprietary ASIO 许可前，不得在发布构建中开启。
+非 ASIO 产物位于 `build/iplug2/out/OpenRigStandalone.exe`。`OPENRIG_IPLUG2_ENABLE_ASIO` 默认关闭，使日常 Core/Adapter 开发不必编译 ASIO SDK。
+
+OpenRig 已选择 `GPL-3.0-only`，需要 ASIO 时使用独立 Preset：
+
+```powershell
+cmake --preset iplug2-asio
+cmake --build --preset iplug2-asio-debug
+ctest --preset iplug2-asio-debug
+cmake --build --preset iplug2-asio-release
+ctest --preset iplug2-asio-release
+```
+
+ASIO Build 必须从 `third_party/asio` 使用固定、带当前双许可文本的 SDK；不得直接编译 iPlug2/RtAudio 内嵌的旧 SDK 快照。发布要求见 `docs/licensing.md`。
