@@ -1,16 +1,17 @@
-# 0002 Graph-ready model with a linear v0.1 product
+# 0002 使用面向 Graph 的模型，v0.1 产品仅支持线性链
 
-Status: Accepted  
-Date: 2026-09-21
+状态：已采纳
 
-## Context
+日期：2026-09-21
 
-A vector effect chain is simple, but future split/mix routing would require replacing its persistence and editing model.
+## 背景
 
-## Decision
+使用 vector 表示效果器链很简单，但未来若支持分流和混音，现有的持久化格式与编辑模型将不得不重做。
 
-Represent user state as nodes and connections from day one. v0.1 validation/UI accepts exactly one connected linear chain. Graph feedback, branching and merging are deferred.
+## 决策
 
-## Consequences
+从一开始就用 Node 和 Connection 表示用户状态。v0.1 的校验器与 UI 仅接受单条连通的线性链。Graph 层反馈、分支和汇合延后实现。
 
-Preset identity and graph APIs survive later DAG work. The initial compiler carries some graph terminology while intentionally rejecting unsupported topologies.
+## 影响
+
+以后扩展为 DAG 时，Preset 中的节点身份和 Graph API 可以延续。初版编译器虽然使用 Graph 术语，但会明确拒绝暂不支持的拓扑。

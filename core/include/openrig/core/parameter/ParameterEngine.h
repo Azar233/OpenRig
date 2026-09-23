@@ -16,12 +16,18 @@ public:
     [[nodiscard]] bool enqueue(const ParameterEvent& event) noexcept { return events_.tryPush(event); }
 
     // Audio-thread consumer. The callback must be noexcept and allocation-free.
+    // A hard limit prevents producer traffic from making a callback unbounded.
     template <typename Apply>
-    void drain(Apply&& apply) noexcept
+    [[nodiscard]] std::size_t drainUpTo(const std::size_t maxEvents, Apply&& apply) noexcept
     {
         ParameterEvent event;
-        while (events_.tryPop(event))
+        std::size_t consumed = 0;
+        while (consumed < maxEvents && events_.tryPop(event))
+        {
             apply(event);
+            ++consumed;
+        }
+        return consumed;
     }
 
 private:

@@ -1,29 +1,29 @@
-# Contributing
+# 参与开发
 
-## Before coding
+## 开始编码前
 
-1. Read `docs/architecture.md`, `docs/engineering-standard.md`, and `docs/testing.md`.
-2. Select one item from `todolist.md`; mark it `IN PROGRESS` and add your name/date before implementation.
-3. For changes to the graph model, `AudioNode` ABI, parameter model, ownership, preset schema, or plugin parameter strategy, add an ADR first.
+1. 阅读 `docs/architecture.md`、`docs/engineering-standard.md` 和 `docs/testing.md`。
+2. 从 `todolist.md` 选择一个未被阻塞的任务；实施前标记为 `IN PROGRESS`，记录负责人和日期。
+3. 若变更 Graph 模型、`AudioNode` ABI、参数模型、所有权、Preset Schema 或 Plugin 参数策略，先新增 ADR。
 
-## Change requirements
+## 变更要求
 
-- Keep commits focused and use an imperative subject (`Add linear graph validation`).
-- Add or update tests with behavior changes.
-- Run configure, build, CTest, and any task-specific checks.
-- Update `todolist.md` with status and evidence (test name, benchmark path, or artifact).
-- Never commit generated build output, licensed model files, commercial IRs, credentials, or machine-specific absolute paths.
+- 每次提交保持主题集中；Commit 标题使用祈使语气，例如 `Add linear graph validation`。
+- 行为变更必须同步新增或更新测试。
+- 执行配置、构建、CTest 及任务专属检查。
+- 在 `todolist.md` 中更新状态，并填写测试名称、Benchmark 路径或产物等验收证据。
+- 不得提交构建产物、受版权限制的模型、商业 IR、凭据或本机专属绝对路径。
 
-## Review checklist
+## 评审检查项
 
-- Dependency direction is preserved.
-- `process()` remains `noexcept`, bounded, allocation-free and lock-free.
-- Public preset keys and node type strings remain stable.
-- Buffer sizes are checked against `PrepareSpec::maxBlockSize`.
-- Channel layouts, latency and tail behavior are explicit.
-- Error handling is performed at a non-realtime boundary.
-- Test coverage matches `docs/testing.md`.
+- 依赖方向是否保持正确。
+- `process()` 是否仍为 `noexcept`、有界、无分配且无锁。
+- 公开的 Preset key 和 Node type 字符串是否稳定。
+- Buffer 长度是否按 `PrepareSpec::maxBlockSize` 校验。
+- 声道布局、延迟和 Tail 行为是否明确。
+- 错误是否在非实时边界处理。
+- 测试是否满足 `docs/testing.md`。
 
-## Definition of Done
+## 完成定义（Definition of Done）
 
-A task is `DONE` only when its code, tests, documentation, and acceptance evidence are present. Code that compiles but lacks required tests stays `IN REVIEW` or `BLOCKED`.
+只有代码、必需测试、文档和验收证据都齐备，任务才能标记 `DONE`。仅能编译但缺少规定测试的任务应保持 `IN REVIEW` 或 `BLOCKED`。

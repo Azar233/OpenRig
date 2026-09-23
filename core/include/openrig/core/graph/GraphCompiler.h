@@ -10,9 +10,29 @@
 
 namespace openrig::graph
 {
+enum class GraphCompileErrorCode
+{
+    None,
+    InvalidPrepareSpec,
+    ReservedNodeId,
+    DuplicateNodeId,
+    UnregisteredNodeType,
+    MissingConnectionEndpoint,
+    DuplicateConnection,
+    SelfConnection,
+    BranchingUnsupported,
+    MergingUnsupported,
+    Cycle,
+    DisconnectedGraph,
+    UnsupportedChannelLayout,
+    UnknownParameter,
+    NodeFactoryFailed,
+};
+
 struct GraphCompileResult
 {
     std::unique_ptr<CompiledGraph> graph;
+    GraphCompileErrorCode code = GraphCompileErrorCode::None;
     std::string error;
 
     [[nodiscard]] explicit operator bool() const noexcept { return graph != nullptr; }

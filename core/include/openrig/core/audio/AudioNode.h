@@ -1,6 +1,7 @@
 #pragma once
 
 #include "openrig/core/audio/AudioBlockView.h"
+#include "openrig/core/audio/NodeCapabilities.h"
 #include "openrig/core/audio/PrepareSpec.h"
 #include "openrig/core/parameter/Parameter.h"
 
@@ -23,6 +24,8 @@ public:
         std::uint32_t numFrames) noexcept = 0;
 
     virtual void setBypassed(bool bypassed) noexcept = 0;
+
+    [[nodiscard]] virtual NodeCapabilities capabilities() const noexcept { return {}; }
 
     [[nodiscard]] virtual std::span<const ParameterDescriptor> parameters() const noexcept = 0;
     virtual bool setParameter(ParameterIndex index, Sample value) noexcept = 0;

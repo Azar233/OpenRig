@@ -1,109 +1,109 @@
-# Test strategy and quality gates
+# 测试策略与质量门禁
 
-Tests are part of implementation, not a cleanup phase. Every result must be reproducible from a recorded command, fixture and build configuration.
+测试是实现的一部分，不是最后的清理工作。每条结果都必须能通过记录的命令、Fixture 和构建配置复现。
 
-## Test layers
+## 测试层级
 
-| Layer | Scope | Required evidence |
+| 层级 | 范围 | 必需证据 |
 |---|---|---|
-| Unit | DSP primitives, nodes, queues, serializers | deterministic pass/fail and numerical tolerance |
-| Graph/component | validation, order, buffers, parameters, swaps, resources | positive and negative topology cases |
-| Integration | iPlug2 audio adapter, device, NAM, IR, preset, plugin state | host/device/version matrix |
-| Golden audio | sound-affecting regression | input WAV, reference WAV, algorithm/version metadata, tolerance |
-| Realtime stress | allocations, exceptions, memory safety, swaps | block count, seed, sanitizer/guard result |
-| Benchmark | mean/p95/p99 and realtime factor | machine/toolchain/config metadata |
-| Soak/release | continuous end-to-end processing | duration, sample rate/block, dropout/crash/deadlock counters |
+| Unit Test | DSP 基础算法、Node、Queue、Serializer | 确定性的 Pass/Fail 与数值容差 |
+| Graph/Component Test | 校验、执行顺序、Buffer、参数、Swap、资源 | 正向与负向拓扑案例 |
+| Integration Test | iPlug2 Audio Adapter、设备、NAM、IR、Preset、Plugin State | Host/设备/版本矩阵 |
+| Golden Audio Test | 音色相关回归 | 输入 WAV、参考 WAV、算法/版本元数据、容差 |
+| Realtime Stress Test | 分配、异常、内存安全、Graph Swap | Block 数、随机种子、Sanitizer/Guard 结果 |
+| Benchmark | mean/p95/p99 与 Realtime Factor | 机器、工具链和构建配置元数据 |
+| Soak/Release Test | 连续的端到端处理 | 时长、采样率/Block、dropout/crash/deadlock 计数 |
 
-The dependency-free `openrig_core_tests` executable is a bootstrap harness. Adopt a pinned Catch2 version when test volume justifies it; do not delay early tests on that dependency.
+当前无第三方测试依赖，并已拆分为 `openrig_node_tests`、`openrig_graph_compiler_tests`、`openrig_graph_execution_tests`、`openrig_parameter_transport_tests` 和 `openrig_audio_engine_tests` 五个独立 CTest。AudioEngine 测试包含 Graph Swap、Queue 回压、所有权与 100,000 Block 实时分配压力；Adapter 建立后继续采用独立 Test Target。若以后引入 Catch2，必须固定版本，且不能阻塞当前门禁。
 
-## Mandatory node input suite
+## 每个 Audio Node 必测的输入
 
-Every audio node must process, at minimum:
+每个 Node 至少处理以下输入：
 
-- silence;
-- one-sample impulse at multiple offsets;
-- positive and negative DC;
-- sine at 100 Hz, 1 kHz and 10 kHz where below Nyquist;
-- seeded noise;
-- full-scale and modest over-range input;
-- block lengths 1, a typical length, a non-power-of-two length, and `maxBlockSize`.
+- Silence；
+- 在多个位置出现的单 Sample Impulse；
+- 正、负 DC；
+- 低于 Nyquist 频率时的 100 Hz、1 kHz 和 10 kHz Sine；
+- 固定 Seed 的 Noise；
+- 满刻度以及轻微超过满刻度的输入；
+- 长度为 1、常用长度、非 2 的幂长度和 `maxBlockSize` 的 Block。
 
-Common assertions: no crash, no exception, finite output, no unexpected DC, deterministic reset, correct bypass, parameter bounds, and no write beyond the declared frame/channel region.
+通用断言：不崩溃、不抛异常、输出有限、没有非预期 DC、`reset()` 后行为可复现、Bypass 正确、参数范围正确，且不写出声明的帧/声道区域。
 
-## Node-specific assertions
+## Node 专属断言
 
-- Gain: exact or tolerance-bounded multiplication and smoothing duration.
-- Filters: magnitude/phase response at selected frequencies and stability.
-- Delay: impulse timing, feedback decay, mix semantics and tail.
-- Dynamics: detector timing, threshold/ratio curve and silence recovery.
-- Modulation: rate/depth bounds and channel layout.
-- Nonlinear/amp: finite output, alias/oversampling comparison, DC behavior and level bounds.
-- Convolution: impulse equals IR within tolerance, latency report, IR swap behavior.
-- NAM: supported sample-rate behavior, prewarm off audio, deterministic model swap and missing/corrupt file errors.
+- Gain：乘法结果符合精确值或容差，smoothing 时长正确。
+- Filter：选定频点上的幅频/相频响应与稳定性。
+- Delay：Impulse 时序、Feedback 衰减、Mix 语义与 Tail。
+- Dynamics：Detector 时序、Threshold/Ratio 曲线和静音恢复。
+- Modulation：Rate/Depth 边界与声道布局。
+- Nonlinear/Amp：输出有限、Alias/Oversampling 对比、DC 行为与电平边界。
+- Convolution：Impulse 输出在容差内等于 IR，并核实 Latency 与 IR Swap。
+- NAM：支持的采样率行为、Audio Thread 外 prewarm、可复现的模型切换，以及文件缺失/损坏错误。
 
-## Graph tests
+## Graph 测试
 
-Positive cases: empty passthrough, one node, ordered multi-node chain, bypass, variable blocks, mono/stereo declared conversions, latency/tail aggregation.
+正向案例：空 Graph 直通、单 Node、有序多 Node 链、Bypass、可变 Block、显式声明的 mono/stereo 转换，以及 Latency/Tail 汇总。
 
-Negative cases: reserved/duplicate ID, unknown type, missing endpoint, duplicate edge, self-edge, branch/merge before supported, cycle, disconnected component, unsupported channel layout, over-max block.
+负向案例：保留或重复 ID、未知类型、缺失端点、重复边、自环、尚不支持的分支/汇合、环、不连通组件、不支持的声道布局、超过上限的 Block。
 
-Graph-swap stress must continuously process while a control producer publishes valid graphs and drains retired graphs. Acceptance: no allocation or lock on audio, no use-after-free, no leak, no corruption, deterministic final ownership.
+Graph Swap 压力测试需在 Control Producer 持续发布有效 Graph 并回收旧 Graph 的同时持续处理音频。验收要求：Audio Thread 无分配/加锁，无 use-after-free、内存泄漏或状态损坏，最终所有权可确定。
 
-## Golden audio policy
+## Golden Audio 规则
 
-- Store small redistributable fixtures only; record their license/provenance.
-- Reference metadata includes node type/version, sample rate, block sequence, parameter state, compiler and tolerance method.
-- Prefer signal metrics (max absolute error, RMS error, correlation, spectral envelope) over byte equality when floating-point/compiler variation is expected.
-- A deliberate sonic change updates references only with review notes explaining the audible/algorithmic change.
+- 只保存体积小、允许再分发的 Fixture，并记录 License 与来源。
+- 参考文件元数据应包含 Node type/版本、采样率、Block 序列、参数状态、编译器与容差算法。
+- 当浮点计算或编译器差异可预期时，应使用信号指标（最大绝对误差、RMS 误差、相关性、频谱包络），不要求字节完全相同。
+- 主动修改音色算法时，更新参考音频必须附评审说明，解释听感和算法变化。
 
-## Realtime safety
+## 实时安全
 
-Each node must survive at least 100,000 process blocks under the realtime allocation guard. The core stress suite combines seeded parameter traffic and graph swaps. Target results:
+每个 Node 都应在实时分配 Guard 下至少运行 100,000 个 Process Block。Core 压力测试需混合固定 Seed 的参数事件与 Graph Swap。目标：
 
-- zero realtime heap allocation;
-- zero exception;
-- zero lock/wait;
-- zero invalid memory access/race in available sanitizer builds;
-- no non-finite samples unless the test explicitly injects non-finite input and defines recovery.
+- Audio Thread Heap Allocation 为 0；
+- Exception 为 0；
+- Lock/Wait 为 0；
+- 可用 Sanitizer 构建中的无效内存访问与 Race 为 0；
+- 除非测试专门注入非有限输入并定义恢复规则，否则不得产生非有限 Sample。
 
-## Performance protocol
+## 性能测试协议
 
-Standard scenarios:
+统一场景：
 
-| Sample rate | Block | Deadline |
+| Sample Rate | Block | Deadline |
 |---:|---:|---:|
 | 48 kHz | 64 | 1.333 ms |
 | 48 kHz | 128 | 2.667 ms |
 | 48 kHz | 256 | 5.333 ms |
 | 96 kHz | 128 | 1.333 ms |
 
-Report warmup, iterations, mean, p95, p99, maximum, realtime factor (`block duration / processing duration`), CPU, OS, power mode, compiler, flags and commit. The default chain must remain under 50% of its callback deadline on the reference machine; under 25% is the design target. A benchmark is not comparable if its environment metadata differs without annotation.
+记录 Warmup、迭代次数、mean、p95、p99、最大值、Realtime Factor（`Block Duration / Processing Duration`）、CPU、OS、电源模式、编译器、编译选项及 commit。默认效果器链在基准机上的长期处理耗时必须低于 Callback Deadline 的 50%；设计目标为低于 25%。若环境元数据不同，必须标注差异，不能直接比较 Benchmark。
 
-## Release candidate gate
+## Release Candidate 门禁
 
-Minimum standalone soak: 48 kHz, 128 samples, 30 minutes, with zero crash, deadlock, graph corruption or realtime allocation. Record driver/interface, measured dropouts, CPU and OS because device/OS scheduling is external to the DSP result.
+Standalone 至少进行 48 kHz、128 Samples、30 分钟的 Soak Test；期间 Crash、Deadlock、Graph Corruption 和 Audio Thread Allocation 均为 0。需记录 Driver/Audio Interface、实际 Dropout、CPU 和 OS，因为设备与系统调度不完全由 DSP 决定。
 
-Before a v0.1 release candidate:
+v0.1 Release Candidate 前必须满足：
 
-- all P0 tasks for the milestone are `DONE`;
-- Debug and Release build/tests pass from a clean tree;
-- dependency/license register is current;
-- preset compatibility and corrupt-input tests pass;
-- VST3 validation/host matrix passes when plugin target exists;
-- performance and soak reports are attached under `artifacts/` in CI or the designated release store (not committed when large).
+- 该里程碑的所有 P0 任务均标记 `DONE`；
+- 从干净工作区执行 Debug/Release 构建与测试并通过；
+- 第三方依赖和 License 登记保持最新；
+- Preset 兼容性与损坏输入测试通过；
+- Plugin 目标存在时，VST3 验证及 Host 矩阵通过；
+- Performance 和 Soak 报告保存在 CI 的 `artifacts/` 或指定的 Release 存储位置（大文件不提交到仓库）。
 
-## Test case record template
+## 测试案例记录模板
 
 ```text
 ID:
-Requirement/task:
-Build/commit:
-Environment:
-Preconditions/fixtures:
-Procedure:
-Expected:
-Actual:
-Result: PASS | FAIL | BLOCKED
-Evidence:
-Owner/date:
+关联需求/任务:
+构建版本/commit:
+环境:
+前置条件/Fixture:
+步骤:
+预期:
+实际:
+结果: PASS | FAIL | BLOCKED
+证据:
+负责人/日期:
 ```

@@ -21,6 +21,7 @@ public:
     void reset() noexcept override;
     void process(const AudioBlockView& input, const AudioBlockView& output, std::uint32_t numFrames) noexcept override;
     void setBypassed(bool bypassed) noexcept override { bypassed_ = bypassed; }
+    [[nodiscard]] NodeCapabilities capabilities() const noexcept override { return {false, 1, 1}; }
     [[nodiscard]] std::span<const ParameterDescriptor> parameters() const noexcept override { return descriptors_; }
     bool setParameter(ParameterIndex index, Sample value) noexcept override;
 

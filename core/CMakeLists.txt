@@ -1,4 +1,5 @@
 add_library(openrig_core STATIC
+    src/AudioEngine.cpp
     src/CompiledGraph.cpp
     src/GraphCompiler.cpp
     src/NodeRegistry.cpp

@@ -1,16 +1,17 @@
-# 0004 Staged graph and resource swaps
+# 0004 分阶段切换 Graph 与资源
 
-Status: Accepted  
-Date: 2026-09-21
+状态：已采纳
 
-## Context
+日期：2026-09-21
 
-Graph compilation, NAM loading/prewarm, IR preprocessing and object destruction are not realtime safe. A callback mutex can cause dropouts or priority inversion.
+## 背景
 
-## Decision
+Graph 编译、NAM 加载和 prewarm、IR 预处理以及对象析构都不适合在实时线程执行。Audio Callback 中使用 mutex 可能造成 dropout 或优先级反转。
 
-Prepare replacement state off the audio thread, publish through a bounded SPSC mailbox, swap only at a block boundary, and return the replaced object through a retire queue for non-realtime destruction.
+## 决策
 
-## Consequences
+在 Audio Thread 之外准备替代状态，通过有界 SPSC mailbox 发布；仅在音频块边界切换；旧对象进入 retire queue，由非实时线程销毁。
 
-Audio processing does no construction, locking or heavy destruction. Ownership and queue-full behavior require explicit tests, and reclamation must be serviced regularly by control code.
+## 影响
+
+Audio Thread 不负责构造、加锁或重型析构。必须明确测试所有权、队列满载时的行为，并确保 Control Thread 定期回收旧对象。

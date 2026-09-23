@@ -1,6 +1,6 @@
-# Preset schema v1 contract
+# Preset Schema v1 契约
 
-The serializer is planned in T021. This document freezes the compatibility shape before implementation.
+序列化器计划在 T021 中实现。本文在实施前确定兼容性格式。
 
 ```json
 {
@@ -25,17 +25,17 @@ The serializer is planned in T021. This document freezes the compatibility shape
 }
 ```
 
-## Rules
+## 规则
 
-- `schemaVersion` is an integer used by migrations; `appVersion` is informational/diagnostic.
-- `NodeId` is a 16-character hexadecimal string to preserve all 64 bits across JavaScript/Web.
-- Node `type` and parameter keys are stable public identifiers.
-- Connections are persisted even though v0.1 exposes only a linear chain.
-- Unknown top-level and node fields should be retained when feasible.
-- Unknown node types load as bypassing `MissingNode` objects and preserve their original JSON.
-- Missing external resources do not abort the whole preset; the owning node enters a visible missing-resource state.
+- `schemaVersion` 是迁移依据的整数；`appVersion` 用于说明和诊断。
+- `NodeId` 使用 16 位十六进制字符串，保证全部 64 bit 在 JavaScript/Web 环境中可精确保存。
+- Node `type` 和 Parameter key 是稳定的公开标识。
+- 即使 v0.1 只提供线性链，也必须持久化 Connection。
+- 在可行范围内保留未知的顶层字段与 Node 字段。
+- 未知 Node type 应加载为自动 Bypass 的 `MissingNode`，并保留原始 JSON。
+- 外部资源缺失不能导致整个 Preset 加载失败；所属 Node 应进入可见的缺失资源状态。
 
-## Resource reference
+## ResourceRef
 
 ```json
 {
@@ -45,11 +45,11 @@ The serializer is planned in T021. This document freezes the compatibility shape
 }
 ```
 
-Resolution order is preset-relative path, OpenRig resource library, then a recorded absolute fallback if present. Saved presets should prefer portable relative/library references. No model or IR bytes are embedded by default.
+查找顺序：相对 Preset 的路径、OpenRig 资源库、已记录的绝对路径（若有）。保存时应优先使用可移植的相对路径或资源库引用；默认不把模型或 IR 字节嵌入 Preset。
 
-## Migration policy
+## 迁移策略
 
-- Parsers validate structure and limits before constructing a graph.
-- Every schema change adds fixture-based migration and round-trip tests.
-- Loading an older supported version produces the current in-memory form; saving writes the current version unless an explicit compatibility export is requested.
-- A newer unknown schema version must produce a clear non-realtime error and must not partially activate audio state.
+- Parser 在构造 Graph 前验证结构与大小限制。
+- 每次 Schema 变更都必须增加基于 Fixture 的迁移测试和 Round-trip 测试。
+- 读取受支持的旧版本后，转换为当前内存模型；除非用户显式要求兼容导出，保存时统一写当前版本。
+- 遇到更新但未知的 `schemaVersion`，应在非实时线程给出明确错误，不能部分激活音频状态。
